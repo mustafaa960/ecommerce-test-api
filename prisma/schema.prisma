@@ -1,0 +1,69 @@
+// Prisma schema file
+// See https://www.prisma.io/docs/concepts/components/prisma-schema
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model User {
+  id Int @id @default(autoincrement())
+  email String @db.VarChar(255) @unique
+  password String @db.VarChar(255)
+  token String @db.VarChar(255) @unique
+  name String @db.VarChar(255)
+  createdAt DateTime @default(now())
+  lastLoginAt DateTime @default(now())
+  isActive Boolean @default(true)
+
+  orderUsers Order[] @relation("OrderUser")
+
+  @@index([email])
+  @@index([token])
+}
+
+model Category {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+
+  products Product[] @relation("ProductCategory")
+}
+
+model Product {
+  id Int @id @default(autoincrement())
+  name String @db.VarChar(255)
+  description String
+  price Float
+  category Category @relation(name: "ProductCategory", fields: [categoryId], references: [id])
+  categoryId Int
+
+  orderItems OrderItem[] @relation("OrderItemProduct")
+}
+
+model Order {
+  id Int @id @default(autoincrement())
+  user User @relation(name: "OrderUser", fields: [userId], references: [id])
+  userId Int
+  createdAt DateTime
+  paid Boolean
+
+  orderItems OrderItem[] @relation("OrderItemOrder")
+}
+
+model OrderItem {
+  id Int @id @default(autoincrement())
+  order Order @relation(name: "OrderItemOrder", fields: [orderId], references: [id])
+  orderId Int
+  product Product @relation(name: "OrderItemProduct", fields: [productId], references: [id])
+  productId Int
+  price Float
+}
+
+model Role {
+  id Int @id @default(autoincrement())
+  field1 String?
+}
